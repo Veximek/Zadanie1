@@ -8,7 +8,7 @@ ENV AUTOR = $AUTOR
 RUN apk update && \
     apk upgrade && \
     apk add --no-cache nodejs=20.12.1-r0 \
-    npm=10.2.5-r0 && \
+    npm=10.2.5-r0 \
     openssh-client \
     git && \
     rm -rf /etc/apk/cache
@@ -17,21 +17,17 @@ RUN apk update && \
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN mkdir -p /zadanie1
 
-RUN --mount=type=ssh git clone git@github.com:Veximek/Zadanie1.git zadanie1 
+RUN --mount=type=ssh,id=veximek git clone git@github.com:Veximek/Zadanie1.git zadanie1 
 
-WORKDIR /app
-
-COPY src/package.json .
+WORKDIR /zadanie1/src
 
 RUN npm install
-
-COPY ./src .
 
 
 
 # syntax=docker/dockerfile:1.3
 # Etap 2: Uruchomienie aplikacji w kontenerze
-FROM node:alpine
+FROM node:alpine as prod
 
 ARG VERSION
 
@@ -40,7 +36,7 @@ LABEL org.opencontainers.image.version="$VERSION"
 
 WORKDIR /app
 
-COPY --from=builder /app .
+COPY --from=builder /zadanie1/src .
 
 
 ENV PORT=3000
